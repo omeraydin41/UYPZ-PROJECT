@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, ChefHat, User, LogOut } from 'lucide-react';
 import { Button } from './Button';
 import { LoginModal } from './LoginModal';
@@ -20,6 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
+  const [scrolled, setScrolled] = useState(false);
 
   const navLinks = [
     { name: "Hakkımızda", href: "#about" },
@@ -30,7 +32,46 @@ export const Navbar: React.FC<NavbarProps> = ({
     { name: "Fiyatlandırma", href: "#pricing" },
   ];
 
-  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  // Handle Scroll Effect for Navbar Background
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll Spy Implementation
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      // Trigger slightly before the middle of the screen
+      rootMargin: '-40% 0px -60% 0px', 
+      threshold: 0
+    };
+
+    const observerCallback: IntersectionObserverCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    navLinks.forEach((link) => {
+      const sectionId = link.href.substring(1);
+      const element = document.getElementById(sectionId);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (isLoggedIn) {
        setIsOpen(false);
@@ -39,7 +80,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     const element = document.querySelector(href);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      // Offset for fixed header
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
     setIsOpen(false);
   };
@@ -61,12 +112,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <nav className="fixed w-full z-50 bg-cream-50/80 backdrop-blur-md border-b border-cream-200">
+      <nav 
+        className={`fixed w-full z-50 transition-all duration-500 ease-in-out border-b
+          ${scrolled 
+            ? 'bg-white/90 backdrop-blur-xl border-stone-200/60 shadow-sm py-0' 
+            : 'bg-transparent border-transparent py-2'
+          }
+        `}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => onLogoClick()}>
-              <div className="bg-primary-100 p-2.5 rounded-xl mr-3">
+            <div 
+              className="flex-shrink-0 flex items-center cursor-pointer group" 
+              onClick={() => onLogoClick()}
+            >
+              <div className="bg-gradient-to-tr from-primary-100 to-primary-50 p-2.5 rounded-2xl mr-3 group-hover:scale-105 transition-transform duration-300 shadow-sm border border-primary-100/50">
                 <ChefHat className="h-7 w-7 text-primary-600" />
               </div>
               <span className="font-bold text-xl tracking-tight text-stone-800">
@@ -75,44 +136,60 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex space-x-8 items-center">
-              {!isLoggedIn && navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => handleScroll(e, link.href)}
-                  className="text-stone-600 hover:text-primary-600 font-medium transition-colors text-sm cursor-pointer"
-                >
-                  {link.name}
-                </a>
-              ))}
+            <div className="hidden md:flex items-center bg-stone-100/50 p-1.5 rounded-full border border-stone-200/50 backdrop-blur-sm">
+              {!isLoggedIn && navLinks.map((link) => {
+                const isActive = activeSection === link.href.substring(1);
+                return (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => handleScrollToSection(e, link.href)}
+                    className={`
+                      relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                      ${isActive 
+                        ? 'text-primary-700 bg-white shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] ring-1 ring-black/5 scale-100' 
+                        : 'text-stone-500 hover:text-stone-900 hover:bg-stone-200/50'
+                      }
+                    `}
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      {link.name}
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
+                      )}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
               
-              {isLoggedIn ? (
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-sm font-medium text-stone-700">
-                    <div className="w-9 h-9 bg-primary-100 rounded-full flex items-center justify-center text-primary-700">
-                      <User className="w-5 h-5" />
+            {/* Right Side Actions */}
+            <div className="hidden md:flex items-center gap-3 ml-4">
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-3 pl-4 border-l border-stone-200">
+                    <div className="flex items-center gap-3 text-sm font-medium text-stone-700 bg-white border border-stone-200 pr-4 pl-1 py-1 rounded-full shadow-sm">
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <span>{userName || 'Hesabım'}</span>
                     </div>
-                    <span>{userName || 'Hesabım'}</span>
+                    <Button variant="ghost" size="sm" onClick={() => onLogout()} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0 flex items-center justify-center">
+                      <LogOut className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => onLogout()} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Çıkış Yap
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" className="!px-3 text-stone-600 hover:text-primary-700" onClick={() => setIsLoginOpen(true)}>Giriş Yap</Button>
-                  <Button variant="primary" size="sm" className="rounded-xl shadow-primary-500/20 shadow-lg" onClick={() => scrollToDemo()}>Ücretsiz Dene</Button>
-                </>
-              )}
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" className="!px-5 text-stone-600 hover:text-primary-700 hover:bg-primary-50/50" onClick={() => setIsLoginOpen(true)}>Giriş Yap</Button>
+                    <Button variant="primary" size="sm" className="rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5" onClick={() => scrollToDemo()}>Ücretsiz Dene</Button>
+                  </>
+                )}
             </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-stone-600 hover:text-primary-600 focus:outline-none p-2"
+                className="text-stone-600 hover:text-primary-600 focus:outline-none p-2.5 bg-white rounded-xl border border-stone-200 shadow-sm active:scale-95 transition-all"
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -122,28 +199,42 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Menu Panel */}
         {isOpen && (
-          <div className="md:hidden absolute top-20 left-0 w-full bg-cream-50 border-b border-cream-200 shadow-lg p-4 flex flex-col space-y-4">
-            {!isLoggedIn && navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-stone-600 hover:text-primary-600 font-medium block p-3 rounded-xl hover:bg-white cursor-pointer"
-                onClick={(e) => handleScroll(e, link.href)}
-              >
-                {link.name}
-              </a>
-            ))}
-            <div className="pt-4 border-t border-cream-200 flex flex-col gap-3">
+          <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-stone-200 shadow-xl px-4 py-6 flex flex-col space-y-3 animate-fade-in-up origin-top">
+            {!isLoggedIn && navLinks.map((link, idx) => {
+              const isActive = activeSection === link.href.substring(1);
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                  className={`
+                    flex items-center justify-between p-4 rounded-2xl transition-all duration-300 animate-fade-in-up
+                    ${isActive 
+                      ? 'bg-primary-50 text-primary-700 font-bold border border-primary-100 shadow-sm translate-x-2' 
+                      : 'text-stone-600 hover:text-primary-600 hover:bg-stone-50 font-medium'
+                    }
+                  `}
+                  onClick={(e) => handleScrollToSection(e, link.href)}
+                >
+                  <span className="flex items-center gap-3">
+                     {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-600"></div>}
+                     {link.name}
+                  </span>
+                  {isActive && <ChefHat className="w-4 h-4 opacity-50" />}
+                </a>
+              );
+            })}
+            <div className="pt-4 mt-2 border-t border-stone-100 flex flex-col gap-3 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                {isLoggedIn ? (
-                 <Button variant="ghost" className="w-full justify-start text-red-500" onClick={() => { onLogout(); setIsOpen(false); }}>
-                   <LogOut className="w-4 h-4 mr-2" />
+                 <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-50 rounded-xl py-4" onClick={() => { onLogout(); setIsOpen(false); }}>
+                   <LogOut className="w-5 h-5 mr-3" />
                    Çıkış Yap
                  </Button>
                ) : (
-                 <>
-                   <Button variant="ghost" className="w-full justify-start" onClick={() => { setIsLoginOpen(true); setIsOpen(false); }}>Giriş Yap</Button>
-                   <Button variant="primary" className="w-full" onClick={() => { scrollToDemo(); setIsOpen(false); }}>Ücretsiz Dene</Button>
-                 </>
+                 <div className="grid grid-cols-2 gap-3">
+                   <Button variant="ghost" className="w-full rounded-xl border border-stone-200" onClick={() => { setIsLoginOpen(true); setIsOpen(false); }}>Giriş Yap</Button>
+                   <Button variant="primary" className="w-full rounded-xl shadow-md" onClick={() => { scrollToDemo(); setIsOpen(false); }}>Ücretsiz Dene</Button>
+                 </div>
                )}
             </div>
           </div>

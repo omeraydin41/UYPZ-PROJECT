@@ -3,7 +3,7 @@ import { generateRecipesFromIngredients } from '../services/geminiService';
 import { Recipe } from '../types';
 import { RecipeCard } from './RecipeCard';
 import { Button } from './Button';
-import { Search, Loader2, Lock } from 'lucide-react';
+import { Search, Loader2, Lock, Sparkles, ChefHat, Plus, X } from 'lucide-react';
 
 export const DemoSection: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
@@ -45,97 +45,152 @@ export const DemoSection: React.FC = () => {
   };
 
   return (
-    <section id="demo" className="py-24 bg-white relative scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-stone-900 mb-4">Şef Sensin, Asistanın Yapay Zekâ</h2>
-          <p className="text-stone-600 max-w-2xl mx-auto">
-            Dolabındaki malzemeleri aşağıya ekle. Yapay zekâmız saniyeler içinde sana özel tarifler oluştursun.
-            <span className="block mt-2 text-sm text-primary-600 font-bold">Bu bir demo sürümüdür.</span>
+    <section id="demo" className="py-24 bg-stone-50 relative scroll-mt-20 overflow-hidden">
+       {/* Ambient Background */}
+       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-white to-transparent -z-10"></div>
+       <div className="absolute right-0 top-1/4 w-96 h-96 bg-primary-100/40 rounded-full blur-[100px] -z-10"></div>
+       <div className="absolute left-0 bottom-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[100px] -z-10"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Header */}
+        <div className="text-center mb-12 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-sm text-stone-600 text-xs font-bold uppercase tracking-wider mb-6">
+             <ChefHat className="w-3.5 h-3.5 text-primary-600" />
+             <span>Canlı Demo</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 tracking-tight">
+            Şef Sensin, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 to-primary-500">Asistanın Yapay Zeka</span>
+          </h2>
+          <p className="text-lg text-stone-600 leading-relaxed">
+            Dolabındaki malzemeleri panele ekle, Gemini AI motorumuz saniyeler içinde sana özel gurme reçeteler oluştursun.
           </p>
         </div>
 
-        {/* Interaction Area */}
-        <div className="max-w-3xl mx-auto bg-cream-50 rounded-3xl shadow-xl shadow-stone-200/50 border border-white p-6 md:p-8 relative z-20">
-          <form onSubmit={handleAddIngredient} className="relative mb-6">
-            <div className="flex items-center border-2 border-cream-200 rounded-2xl overflow-hidden focus-within:border-primary-400 focus-within:ring-4 focus-within:ring-primary-100 transition-all bg-white">
-              <input
-                id="recipe-input"
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Örn: Yumurta, Domates, Soğan..."
-                className="flex-1 px-4 py-4 outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
-              />
-              <button 
-                type="submit"
-                className="px-6 py-4 bg-cream-100 text-stone-600 hover:bg-cream-200 font-semibold transition-colors border-l border-cream-200"
-              >
-                Ekle
-              </button>
+        {/* Control Panel / Interaction Area */}
+        <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-[2.5rem] p-3 shadow-2xl shadow-stone-200/50 border border-white">
+                <div className="bg-stone-50/50 rounded-[2rem] border border-stone-100 p-6 md:p-10 relative overflow-hidden">
+                    
+                    {/* Input Label */}
+                    <div className="flex items-center justify-between mb-6">
+                        <label className="text-sm font-bold text-stone-800 uppercase tracking-wide flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-accent" />
+                            Malzeme Girişi
+                        </label>
+                        <span className="text-xs font-medium text-stone-400 bg-white px-2 py-1 rounded-md border border-stone-100">
+                            AI Model: Gemini 2.5 Flash
+                        </span>
+                    </div>
+
+                    {/* Input Form */}
+                    <form onSubmit={handleAddIngredient} className="relative mb-6 group">
+                        <div className="flex items-center bg-white border-2 border-stone-200 rounded-2xl overflow-hidden focus-within:border-primary-500 focus-within:ring-4 focus-within:ring-primary-100/50 transition-all shadow-sm">
+                            <input
+                                id="recipe-input"
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder="Örn: Yumurta, Domates, Kuru Soğan..."
+                                className="flex-1 px-6 py-5 outline-none text-lg text-stone-800 placeholder:text-stone-300 font-medium bg-transparent"
+                            />
+                            <button 
+                                type="submit"
+                                disabled={!inputValue.trim()}
+                                className="px-6 py-5 bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-primary-600 font-bold transition-colors border-l border-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Plus className="w-6 h-6" />
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Ingredients List */}
+                    <div className="min-h-[80px] bg-white rounded-2xl border border-stone-100 p-4 mb-8 flex flex-wrap content-start gap-2 shadow-inner">
+                        {ingredients.length === 0 && (
+                            <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm italic gap-2 py-4">
+                                <Search className="w-4 h-4 opacity-50" />
+                                Henüz malzeme eklenmedi...
+                            </div>
+                        )}
+                        {ingredients.map((ing, idx) => (
+                            <span key={idx} className="inline-flex items-center bg-primary-50 text-primary-800 pl-3 pr-2 py-1.5 rounded-xl text-sm font-bold border border-primary-100 shadow-sm animate-scale-in group">
+                                {ing}
+                                <button 
+                                    onClick={() => removeIngredient(idx)}
+                                    className="ml-2 p-0.5 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Action Button */}
+                    <Button 
+                        onClick={handleGenerate} 
+                        disabled={ingredients.length === 0 || loading}
+                        className="w-full rounded-xl py-5 text-lg shadow-xl shadow-primary-600/20 hover:shadow-primary-600/30 hover:-translate-y-0.5 transition-all" 
+                        size="lg"
+                    >
+                        {loading ? (
+                            <span className="flex items-center gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Şef Düşünüyor...
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                Tarifleri Oluştur <Sparkles className="w-5 h-5 fill-current" />
+                            </span>
+                        )}
+                    </Button>
+                </div>
             </div>
-          </form>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-8 min-h-[40px]">
-            {ingredients.length === 0 && (
-              <span className="text-stone-400 text-sm italic py-1">Henüz malzeme eklenmedi...</span>
-            )}
-            {ingredients.map((ing, idx) => (
-              <span key={idx} className="inline-flex items-center bg-white text-primary-700 px-3 py-1.5 rounded-full text-sm font-medium border border-primary-200 shadow-sm animate-fade-in">
-                {ing}
-                <button 
-                  onClick={() => removeIngredient(idx)}
-                  className="ml-2 hover:text-red-500 focus:outline-none transition-colors"
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
-          </div>
-
-          <Button 
-            onClick={handleGenerate} 
-            disabled={ingredients.length === 0 || loading}
-            className="w-full rounded-2xl shadow-primary-500/20" 
-            size="lg"
-          >
-            {loading ? 'Tarifler Hazırlanıyor...' : 'Tarifleri Göster'}
-            {!loading && <Search className="ml-2 w-5 h-5" />}
-          </Button>
         </div>
 
-        {/* Results Area */}
+        {/* Loading State */}
         {loading && (
-           <div className="mt-16 flex flex-col items-center justify-center text-stone-400 animate-pulse">
-             <Loader2 className="w-12 h-12 animate-spin text-primary-500 mb-4" />
-             <p>Yapay zekâ malzemelerini analiz ediyor...</p>
+           <div className="mt-20 flex flex-col items-center justify-center text-center animate-pulse">
+             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6 border border-stone-100">
+                <ChefHat className="w-8 h-8 text-primary-500 animate-bounce" />
+             </div>
+             <h3 className="text-xl font-bold text-stone-800 mb-2">Lezzet Kombinasyonları Taranıyor</h3>
+             <p className="text-stone-500">Yapay zeka binlerce tarifi analiz ediyor...</p>
            </div>
         )}
 
+        {/* Results Grid */}
         {recipes && (
-          <div ref={resultsRef} className="mt-20">
-             <h3 className="text-2xl font-bold text-stone-900 mb-8 text-center">Senin İçin Seçtiklerimiz</h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div ref={resultsRef} className="mt-24 animate-fade-in-up">
+             <div className="flex items-center justify-between mb-10 px-2">
+                <div>
+                    <h3 className="text-3xl font-bold text-stone-900">Senin İçin Seçtiklerimiz</h3>
+                    <p className="text-stone-500 mt-1">Eldeki malzemelerle yapılabilecek en iyi eşleşmeler.</p>
+                </div>
+             </div>
+             
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                {recipes.map((recipe, idx) => (
                  <RecipeCard key={idx} recipe={recipe} index={idx} />
                ))}
                
-               {/* Premium Gate Card */}
-               <div className="bg-gradient-to-br from-stone-900 to-stone-800 rounded-3xl shadow-xl overflow-hidden flex flex-col text-center p-6 text-white relative group cursor-pointer hover:shadow-2xl transition-all">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-accent"></div>
-                  <div className="mb-6 mt-4 flex justify-center">
-                    <div className="p-4 bg-white/10 rounded-full group-hover:scale-110 transition-transform duration-300">
-                        <Lock className="w-8 h-8 text-accent" />
-                    </div>
+               {/* Premium Gate Card - Modern Bento Style */}
+               <div className="group relative overflow-hidden bg-stone-900 rounded-[2rem] p-8 flex flex-col justify-between text-white shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer text-center">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-600/30 transition-colors"></div>
+                  
+                  <div className="relative z-10 flex flex-col h-full items-center justify-center">
+                      <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-white/10">
+                          <Lock className="w-8 h-8 text-accent" />
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold mb-3">Daha Fazla Tarif?</h3>
+                      <p className="text-stone-300 text-sm leading-relaxed mb-8 max-w-[200px]">
+                        Premium üyeler her aramada 10+ tarif, kalori takibi ve alışveriş listesi özelliklerine erişir.
+                      </p>
+                      
+                      <Button variant="secondary" className="w-full bg-accent text-stone-900 hover:bg-yellow-400 border-none font-bold rounded-xl">
+                        Premium'a Geç
+                      </Button>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Daha Fazla Tarif?</h3>
-                  <p className="text-stone-300 text-sm mb-6">
-                    Premium üyeler her aramada 10+ tarif, kalori takibi ve alışveriş listesi özelliklerine erişir.
-                  </p>
-                  <Button variant="primary" className="mt-auto w-full bg-accent text-stone-900 hover:bg-yellow-400 border-none">
-                    Premium'a Geç
-                  </Button>
                </div>
              </div>
           </div>

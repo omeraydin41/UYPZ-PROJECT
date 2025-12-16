@@ -244,21 +244,27 @@ export const Footer: React.FC = () => {
                 </p>
             </div>
             
-            {/* Social Media - Non-interactive */}
+            {/* Social Media */}
             <div className="flex space-x-4">
                 {[
-                    { Icon: Instagram, label: "Instagram" },
-                    { Icon: Twitter, label: "Twitter" },
-                    { Icon: Linkedin, label: "LinkedIn" },
-                    { Icon: Facebook, label: "Facebook" }
+                    { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/atknn05/" },
+                    { Icon: Twitter, label: "Twitter", href: "#" },
+                    { Icon: Linkedin, label: "LinkedIn", href: "https://www.linkedin.com/in/%C3%B6mer-ayd%C4%B1n-907035294/" },
+                    { Icon: Facebook, label: "Facebook", href: "#" }
                 ].map((social, idx) => (
-                    <span 
+                    <a 
                         key={idx} 
-                        className="w-10 h-10 rounded-full bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:text-primary-600 hover:border-primary-200 hover:bg-primary-50 transition-all cursor-default shadow-sm" 
+                        href={social.href}
+                        target={social.href.startsWith('http') ? "_blank" : undefined}
+                        rel={social.href.startsWith('http') ? "noopener noreferrer" : undefined}
+                        className="w-10 h-10 rounded-full bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:text-primary-600 hover:border-primary-200 hover:bg-primary-50 transition-all cursor-pointer shadow-sm" 
                         aria-label={social.label}
+                        onClick={(e) => {
+                            if (social.href === '#') e.preventDefault();
+                        }}
                     >
                         <social.Icon className="w-5 h-5" />
-                    </span>
+                    </a>
                 ))}
             </div>
           </div>
