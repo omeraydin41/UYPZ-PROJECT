@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, ChefHat, User, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, X, ChefHat, User, LogOut, ChevronDown, Globe } from 'lucide-react';
 import { Button } from './Button';
 import { LoginModal } from './LoginModal';
+import { useLanguage } from '../context/LanguageContext';
+import { Language } from '../constants/translations';
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -18,21 +20,27 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogoClick = () => {},
   userName
 }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  
+  const [registeredUsers, setRegisteredUsers] = useState<any[]>([]);
+
+  const handleRegister = (newUser: any) => {
+    setRegisteredUsers(prev => [...prev, newUser]);
+  };
 
   const navLinks = [
-    { name: "Hakkımızda", href: "#about" },
-    { name: "Nasıl Çalışır?", href: "#how-it-works" },
-    { name: "Ön İzleme", href: "#demo" },
-    { name: "Blog", href: "#blog" },
-    { name: "Yorumlar", href: "#testimonials" },
-    { name: "Fiyatlandırma", href: "#pricing" },
+    { name: t('nav.about'), href: "#about" },
+    { name: t('nav.howItWorks'), href: "#how-it-works" },
+    { name: t('nav.demo'), href: "#demo" },
+    { name: t('nav.blog'), href: "#blog" },
+    { name: t('nav.testimonials'), href: "#testimonials" },
+    { name: t('nav.pricing'), href: "#pricing" },
   ];
 
-  // Handle Scroll Effect for Navbar Background
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -41,11 +49,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Scroll Spy Implementation
   useEffect(() => {
     const observerOptions = {
       root: null,
-      // Trigger slightly before the middle of the screen
       rootMargin: '-40% 0px -60% 0px', 
       threshold: 0
     };
@@ -69,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [navLinks]);
 
   const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -80,7 +86,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     const element = document.querySelector(href);
     if (element) {
-      // Offset for fixed header
       const offset = 80;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
@@ -122,7 +127,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
-            {/* Logo */}
             <div 
               className="flex-shrink-0 flex items-center cursor-pointer group" 
               onClick={() => onLogoClick()}
@@ -135,7 +139,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </div>
 
-            {/* Desktop Menu */}
             <div className="hidden md:flex items-center bg-stone-100/50 p-1.5 rounded-full border border-stone-200/50 backdrop-blur-sm">
               {!isLoggedIn && navLinks.map((link) => {
                 const isActive = activeSection === link.href.substring(1);
@@ -163,41 +166,40 @@ export const Navbar: React.FC<NavbarProps> = ({
               })}
             </div>
               
-            {/* Right Side Actions */}
-            <div className="hidden md:flex items-center gap-3 ml-4">
-                {isLoggedIn ? (
-                  <div className="flex items-center gap-3 pl-4 border-l border-stone-200">
-                    <div className="flex items-center gap-3 text-sm font-medium text-stone-700 bg-white border border-stone-200 pr-4 pl-1 py-1 rounded-full shadow-sm">
-                      <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700">
-                        <User className="w-4 h-4" />
+            <div className="flex items-center gap-3 ml-4">
+                <div className="hidden md:flex items-center gap-3">
+                  {isLoggedIn ? (
+                    <>
+                      <div className="flex items-center gap-3 text-sm font-medium text-stone-700 bg-white border border-stone-200 pr-4 pl-1 py-1 rounded-full shadow-sm">
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <span>{userName || t('nav.account')}</span>
                       </div>
-                      <span>{userName || 'Hesabım'}</span>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => onLogout()} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0 flex items-center justify-center">
-                      <LogOut className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" className="!px-5 text-stone-600 hover:text-primary-700 hover:bg-primary-50/50" onClick={() => setIsLoginOpen(true)}>Giriş Yap</Button>
-                    <Button variant="primary" size="sm" className="rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5" onClick={() => scrollToDemo()}>Ücretsiz Dene</Button>
-                  </>
-                )}
-            </div>
+                      <Button variant="ghost" size="sm" onClick={() => onLogout()} className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0 flex items-center justify-center">
+                        <LogOut className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" size="sm" className="!px-5 text-stone-600 hover:text-primary-700 hover:bg-primary-50/50" onClick={() => setIsLoginOpen(true)}>{t('nav.login')}</Button>
+                      <Button variant="primary" size="sm" className="rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all hover:-translate-y-0.5" onClick={() => scrollToDemo()}>{t('nav.freeTrial')}</Button>
+                    </>
+                  )}
+                </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-stone-600 hover:text-primary-600 focus:outline-none p-2.5 bg-white rounded-xl border border-stone-200 shadow-sm active:scale-95 transition-all"
-              >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
+                <div className="md:hidden flex items-center">
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="text-stone-600 hover:text-primary-600 focus:outline-none p-2.5 bg-white rounded-xl border border-stone-200 shadow-sm active:scale-95 transition-all"
+                  >
+                    {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                  </button>
+                </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu Panel */}
         {isOpen && (
           <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-stone-200 shadow-xl px-4 py-6 flex flex-col space-y-3 animate-fade-in-up origin-top">
             {!isLoggedIn && navLinks.map((link, idx) => {
@@ -228,12 +230,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                {isLoggedIn ? (
                  <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-red-50 rounded-xl py-4" onClick={() => { onLogout(); setIsOpen(false); }}>
                    <LogOut className="w-5 h-5 mr-3" />
-                   Çıkış Yap
+                   {t('nav.logout')}
                  </Button>
                ) : (
                  <div className="grid grid-cols-2 gap-3">
-                   <Button variant="ghost" className="w-full rounded-xl border border-stone-200" onClick={() => { setIsLoginOpen(true); setIsOpen(false); }}>Giriş Yap</Button>
-                   <Button variant="primary" className="w-full rounded-xl shadow-md" onClick={() => { scrollToDemo(); setIsOpen(false); }}>Ücretsiz Dene</Button>
+                   <Button variant="ghost" className="w-full rounded-xl border border-stone-200" onClick={() => { setIsLoginOpen(true); setIsOpen(false); }}>{t('nav.login')}</Button>
+                   <Button variant="primary" className="w-full rounded-xl shadow-md" onClick={() => { scrollToDemo(); setIsOpen(false); }}>{t('nav.freeTrial')}</Button>
                  </div>
                )}
             </div>
@@ -244,6 +246,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <LoginModal 
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
+        registeredUsers={registeredUsers}
+        onRegister={handleRegister}
         onLoginSuccess={(name) => {
           setIsLoginOpen(false);
           onLoginSuccess(name);

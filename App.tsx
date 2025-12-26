@@ -9,13 +9,28 @@ import { Testimonials } from './components/Testimonials';
 import { Pricing } from './components/Pricing';
 import { Footer } from './components/Footer';
 import { Dashboard } from './components/Dashboard';
+import { LanguageProvider } from './context/LanguageContext';
 
 type ViewState = 'landing' | 'dashboard';
+
+// Simple structure to store user data in memory for this session
+interface UserData {
+  username: string;
+  password: string;
+  email: string;
+}
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('landing');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string>('Kullanıcı');
+  
+  // In-memory "database" of registered users
+  const [registeredUsers, setRegisteredUsers] = useState<UserData[]>([]);
+
+  const handleRegisterUser = (newUser: UserData) => {
+    setRegisteredUsers(prev => [...prev, newUser]);
+  };
 
   const handleLoginSuccess = (name?: string) => {
     setIsLoggedIn(true);
@@ -40,33 +55,37 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-stone-900 selection:bg-primary-100 selection:text-primary-900">
-      <Navbar 
-        isLoggedIn={isLoggedIn} 
-        onLoginSuccess={handleLoginSuccess} 
-        onLogout={handleLogout}
-        onLogoClick={handleNavigateHome}
-        userName={userName}
-      />
-      
-      <main>
-        {currentView === 'landing' ? (
-          <>
-            <Hero />
-            <AboutSection />
-            <HowItWorks />
-            <DemoSection />
-            <BlogSection />
-            <Testimonials />
-            <Pricing />
-          </>
-        ) : (
-          <Dashboard userName={userName} />
+    <LanguageProvider>
+      <div className="min-h-screen bg-white font-sans text-stone-900 selection:bg-primary-100 selection:text-primary-900">
+        <Navbar 
+          isLoggedIn={isLoggedIn} 
+          onLoginSuccess={handleLoginSuccess} 
+          onLogout={handleLogout}
+          onLogoClick={handleNavigateHome}
+          userName={userName}
+        />
+        
+        <main>
+          {currentView === 'landing' ? (
+            <>
+              <Hero />
+              <AboutSection />
+              <HowItWorks />
+              <DemoSection />
+              <BlogSection />
+              <Testimonials />
+              <Pricing />
+            </>
+          ) : (
+            <Dashboard userName={userName} />
+          )}
+        </main>
+        
+        {currentView === 'landing' && (
+          <Footer />
         )}
-      </main>
-      
-      {currentView === 'landing' && <Footer />}
-    </div>
+      </div>
+    </LanguageProvider>
   );
 };
 

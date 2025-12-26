@@ -1,11 +1,14 @@
+
 import React, { useState, useRef } from 'react';
 import { generateRecipesFromIngredients } from '../services/geminiService';
 import { Recipe } from '../types';
 import { RecipeCard } from './RecipeCard';
 import { Button } from './Button';
 import { Search, Loader2, Lock, Sparkles, ChefHat, Plus, X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const DemoSection: React.FC = () => {
+  const { t } = useLanguage();
   const [inputValue, setInputValue] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[] | null>(null);
@@ -38,9 +41,16 @@ export const DemoSection: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error(error);
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      alert("Error generating recipes.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const scrollToPricing = () => {
+    const element = document.getElementById('pricing');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -57,13 +67,13 @@ export const DemoSection: React.FC = () => {
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-sm text-stone-600 text-xs font-bold uppercase tracking-wider mb-6">
              <ChefHat className="w-3.5 h-3.5 text-primary-600" />
-             <span>Canlı Demo</span>
+             <span>{t('demo.badge')}</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 tracking-tight">
-            Şef Sensin, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 to-primary-500">Asistanın Yapay Zeka</span>
+            {t('demo.title1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 to-primary-500">{t('demo.title2')}</span>
           </h2>
           <p className="text-lg text-stone-600 leading-relaxed">
-            Dolabındaki malzemeleri panele ekle, Gemini AI motorumuz saniyeler içinde sana özel gurme reçeteler oluştursun.
+            {t('demo.subtitle')}
           </p>
         </div>
 
@@ -76,7 +86,7 @@ export const DemoSection: React.FC = () => {
                     <div className="flex items-center justify-between mb-6">
                         <label className="text-sm font-bold text-stone-800 uppercase tracking-wide flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-accent" />
-                            Malzeme Girişi
+                            {t('demo.inputLabel')}
                         </label>
                         <span className="text-xs font-medium text-stone-400 bg-white px-2 py-1 rounded-md border border-stone-100">
                             AI Model: Gemini 2.5 Flash
@@ -91,7 +101,7 @@ export const DemoSection: React.FC = () => {
                                 type="text"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Örn: Yumurta, Domates, Kuru Soğan..."
+                                placeholder={t('demo.placeholder')}
                                 className="flex-1 px-6 py-5 outline-none text-lg text-stone-800 placeholder:text-stone-300 font-medium bg-transparent"
                             />
                             <button 
@@ -109,7 +119,7 @@ export const DemoSection: React.FC = () => {
                         {ingredients.length === 0 && (
                             <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm italic gap-2 py-4">
                                 <Search className="w-4 h-4 opacity-50" />
-                                Henüz malzeme eklenmedi...
+                                {t('demo.empty')}
                             </div>
                         )}
                         {ingredients.map((ing, idx) => (
@@ -135,11 +145,11 @@ export const DemoSection: React.FC = () => {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Şef Düşünüyor...
+                                {t('demo.generate')}...
                             </span>
                         ) : (
                             <span className="flex items-center gap-2">
-                                Tarifleri Oluştur <Sparkles className="w-5 h-5 fill-current" />
+                                {t('demo.generate')} <Sparkles className="w-5 h-5 fill-current" />
                             </span>
                         )}
                     </Button>
@@ -153,8 +163,8 @@ export const DemoSection: React.FC = () => {
              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6 border border-stone-100">
                 <ChefHat className="w-8 h-8 text-primary-500 animate-bounce" />
              </div>
-             <h3 className="text-xl font-bold text-stone-800 mb-2">Lezzet Kombinasyonları Taranıyor</h3>
-             <p className="text-stone-500">Yapay zeka binlerce tarifi analiz ediyor...</p>
+             <h3 className="text-xl font-bold text-stone-800 mb-2">{t('demo.loadingTitle')}</h3>
+             <p className="text-stone-500">{t('demo.loadingSub')}</p>
            </div>
         )}
 
@@ -163,8 +173,8 @@ export const DemoSection: React.FC = () => {
           <div ref={resultsRef} className="mt-24 animate-fade-in-up">
              <div className="flex items-center justify-between mb-10 px-2">
                 <div>
-                    <h3 className="text-3xl font-bold text-stone-900">Senin İçin Seçtiklerimiz</h3>
-                    <p className="text-stone-500 mt-1">Eldeki malzemelerle yapılabilecek en iyi eşleşmeler.</p>
+                    <h3 className="text-3xl font-bold text-stone-900">{t('demo.resultsTitle')}</h3>
+                    <p className="text-stone-500 mt-1">{t('demo.resultsSub')}</p>
                 </div>
              </div>
              
@@ -182,13 +192,17 @@ export const DemoSection: React.FC = () => {
                           <Lock className="w-8 h-8 text-accent" />
                       </div>
                       
-                      <h3 className="text-2xl font-bold mb-3">Daha Fazla Tarif?</h3>
+                      <h3 className="text-2xl font-bold mb-3">{t('demo.more')}</h3>
                       <p className="text-stone-300 text-sm leading-relaxed mb-8 max-w-[200px]">
-                        Premium üyeler her aramada 10+ tarif, kalori takibi ve alışveriş listesi özelliklerine erişir.
+                        {t('demo.premium')}
                       </p>
                       
-                      <Button variant="secondary" className="w-full bg-accent text-stone-900 hover:bg-yellow-400 border-none font-bold rounded-xl">
-                        Premium'a Geç
+                      <Button 
+                        onClick={scrollToPricing}
+                        variant="secondary" 
+                        className="w-full bg-accent text-stone-900 hover:bg-yellow-400 border-none font-bold rounded-xl"
+                      >
+                        {t('demo.upgrade')}
                       </Button>
                   </div>
                </div>
